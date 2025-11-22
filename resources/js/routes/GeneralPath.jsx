@@ -8,9 +8,14 @@ const General = {
     ABOUT: '/about',
     PROFILE: '/profile',
     CHECKOUT: '/checkout',
-    ORDER_PAYMENT: '/order/:orderId',
-    BLOG_DETAIL: '/blog/:slug',
-    SEARCH_ORDER: '/search-order',
+    DIEUKHOANCHUNG: '/dieu-khoan-chung',
+    MUAHANG: '/huong-dan-mua-hang',
+    THANHTOAN: '/huong-dan-thanh-toan',
+    BAOMAT: '/chinh-sach-bao-mat',
+    DOITRA: '/chinh-sach-doi-tra',
+    KHIEUNAI: '/chinh-sach-kiem-hang',
+    VANCHUYEN: '/chinh-sach-van-chuyen',
+    QUYENKIEMSOATTHONGTIN: '/quyen-kiem-soat-thong-tin',
     NOTFOUND: '/404'
 }
 

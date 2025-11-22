@@ -170,13 +170,17 @@ const Footer = ({ contactRef }) => {
                                 <h2 className="text-3xl font-bold font-serif text-white mb-4">
                                     ALORÉA
                                 </h2>
-                                <p className="!font-sans text-white leading-relaxed mb-6">
-                                    Thương hiệu nước hoa cao cấp, mang đến những trải nghiệm hương thơm độc đáo và quyến rũ.
-                                </p>
+                                <div className="!font-sans text-white leading-relaxed mb-6">
+                                    <p className="font-bold text-lg">CTY TNHH TM DV ALORÉA</p>
+                                    <p className="mt-2">Giấy phép kinh doanh số: <span className="font-bold">0319091160</span> do Sở Tài chính Thành phố Hồ Chí Minh cấp ngày <span className="font-bold">23/10/2025</span></p>
+                                    <p className="mt-2">Số 65 Đường số 4, Khu dân cư CityLand, Phường An Nhơn, Thành phố Hồ Chí Minh, Việt Nam</p>
+                                    <p className="mt-2">Điện thoại/ZALO: <a href="tel:0911468678" className="font-bold">0911.468.678</a></p>
+                                    <p className="mt-2">Email: <a href="mailto:ctyalorea@gmail.com " className="font-bold">ctyalorea@gmail.com</a></p>
+                                </div>
                             </div>
 
                             {/* Contact Info */}
-                            <div className="space-y-4">
+                            {/* <div className="space-y-4">
                                 <h4 className="text-lg font-bold text-white mb-4">Liên hệ</h4>
 
                                 <div className="flex items-center gap-3 group">
@@ -211,7 +215,94 @@ const Footer = ({ contactRef }) => {
                                         </a>
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
+                        </div>
+
+                                    {/* Hỗ Trợ Khách Hàng */}
+                        <div className="footer-support">
+                            <h4 className="text-lg font-bold text-white mb-6 font-serif">Hỗ Trợ Khách Hàng</h4>
+                            <ul className="space-y-3">
+                                <li>
+                                    <a
+                                        href="/dieu-khoan-chung"
+                                        rel="noopener noreferrer"
+                                        className="text-white hover:text-white transition-colors duration-300 flex items-center gap-2 group"
+                                    >
+                                        <span className="w-1 h-1 bg-white rounded-full group-hover:w-2 transition-all duration-300"></span>
+                                        Điều khoản chung
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="/huong-dan-mua-hang"
+                                        rel="noopener noreferrer"
+                                        className="text-white hover:text-white transition-colors duration-300 flex items-center gap-2 group"
+                                    >
+                                        <span className="w-1 h-1 bg-white rounded-full group-hover:w-2 transition-all duration-300"></span>
+                                        Hướng dẫn mua hàng
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="/huong-dan-thanh-toan"
+                                        rel="noopener noreferrer"
+                                        className="text-white hover:text-white transition-colors duration-300 flex items-center gap-2 group"
+                                    >
+                                        <span className="w-1 h-1 bg-white rounded-full group-hover:w-2 transition-all duration-300"></span>
+                                        Hướng dẫn thanh toán
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="/chinh-sach-bao-mat"
+                                        rel="noopener noreferrer"
+                                        className="text-white hover:text-white transition-colors duration-300 flex items-center gap-2 group"
+                                    >
+                                        <span className="w-1 h-1 bg-white rounded-full group-hover:w-2 transition-all duration-300"></span>
+                                        Chính sách bảo mật thông tin
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="/chinh-sach-doi-tra"
+                                        rel="noopener noreferrer"
+                                        className="text-white hover:text-white transition-colors duration-300 flex items-center gap-2 group"
+                                    >
+                                        <span className="w-1 h-1 bg-white rounded-full group-hover:w-2 transition-all duration-300"></span>
+                                        Chính sách đổi trả
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="/chinh-sach-kiem-hang"
+                                        rel="noopener noreferrer"
+                                        className="text-white hover:text-white transition-colors duration-300 flex items-center gap-2 group"
+                                    >
+                                        <span className="w-1 h-1 bg-white rounded-full group-hover:w-2 transition-all duration-300"></span>
+                                        Chính sách kiểm hàng
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="/chinh-sach-van-chuyen"
+                                        rel="noopener noreferrer"
+                                        className="text-white hover:text-white transition-colors duration-300 flex items-center gap-2 group"
+                                    >
+                                        <span className="w-1 h-1 bg-white rounded-full group-hover:w-2 transition-all duration-300"></span>
+                                        Chính sách vận chuyển
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="/quyen-kiem-soat-thong-tin"
+                                        rel="noopener noreferrer"
+                                        className="text-white hover:text-white transition-colors duration-300 flex items-center gap-2 group"
+                                    >
+                                        <span className="w-1 h-1 bg-white rounded-full group-hover:w-2 transition-all duration-300"></span>
+                                        Quyền kiểm soát thông tin cá nhân
+                                    </a>
+                                </li>
+                            </ul>
                         </div>
 
                         {/* Quick Links */}
@@ -253,6 +344,8 @@ const Footer = ({ contactRef }) => {
                                 ))}
                             </div>
                         </div>
+
+
                     </div>
                 </div>
 
