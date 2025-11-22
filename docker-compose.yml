@@ -11,11 +11,9 @@ services:
     restart: always
 
   app:
-    build: .
+    image: registry.gitlab.com/thanhtruongne/alorea-project
     container_name: alorea_app
     working_dir: /app
-    volumes:
-      - ./:/app
     expose:
       - "9000"
     depends_on:
