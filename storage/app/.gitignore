@@ -1,4 +1,7 @@
+# Ignore everything by default
 *
-!private/
-!public/
+
+# But not these files/folders
 !.gitignore
+!public/
+!public/**
