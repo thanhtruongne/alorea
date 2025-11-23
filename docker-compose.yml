@@ -1,4 +1,6 @@
+
 services:
+
   webserver:
     image: nginx:1.27.3-alpine
     ports:
@@ -11,11 +13,11 @@ services:
     restart: always
 
   app:
-    image: registry.gitlab.com/thanhtruongne/alorea-project
+    build: .
     container_name: alorea_app
     working_dir: /app
-    expose:
-      - "9000"
+    volumes:
+      - ./:/app
     depends_on:
       db:
         condition: service_healthy
@@ -25,20 +27,19 @@ services:
     image: mysql:8.0
     container_name: alorea_db
     environment:
-      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
       - MYSQL_DATABASE=${DB_DATABASE}
       - MYSQL_USER=${DB_USERNAME}
       - MYSQL_PASSWORD=${DB_PASSWORD}
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${DB_PASSWORD}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 60s
+      - .docker/data/db:/var/lib/mysql
+    # healthcheck:
+    #   test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 30s
     restart: always
 
   phpmyadmin:
@@ -47,8 +48,5 @@ services:
     ports:
       - 8003:80
     environment:
-      - PMA_HOST=db
-    depends_on:
-      - db
-volumes:
-  mysql_data:
+      - PMA_HOST=${DB_HOST} # from .env
+      - PMA_PORT=${DB_PORT} # from .env
