@@ -1,112 +1,64 @@
 # ============================================
-# Base Stage - Common Dependencies
+# Development Stage
 # ============================================
-FROM php:8.3-fpm-alpine AS base
+FROM php:8.3-fpm-alpine AS development
 
-# Install system dependencies and PHP extensions in one layer
+# Install system dependencies and PHP extensions
 RUN apk add --no-cache \
     libzip-dev \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
-    oniguruma-dev \
     mysql-client \
-    nginx \
-    supervisor \
-    nodejs \
-    npm \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd exif zip pdo pdo_mysql mbstring opcache \
-    && docker-php-ext-enable opcache
-
-# Configure PHP-FPM
-RUN sed -i 's/pm.max_children = 5/pm.max_children = 20/' /usr/local/etc/php-fpm.d/www.conf \
-    && sed -i 's/pm.start_servers = 2/pm.start_servers = 5/' /usr/local/etc/php-fpm.d/www.conf \
-    && sed -i 's/pm.min_spare_servers = 1/pm.min_spare_servers = 3/' /usr/local/etc/php-fpm.d/www.conf \
-    && sed -i 's/pm.max_spare_servers = 3/pm.max_spare_servers = 10/' /usr/local/etc/php-fpm.d/www.conf
-
-# Configure opcache
-RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/opcache.ini \
-    && echo "opcache.memory_consumption=256" >> /usr/local/etc/php/conf.d/opcache.ini \
-    && echo "opcache.interned_strings_buffer=16" >> /usr/local/etc/php/conf.d/opcache.ini \
-    && echo "opcache.max_accelerated_files=10000" >> /usr/local/etc/php/conf.d/opcache.ini \
-    && echo "opcache.validate_timestamps=0" >> /usr/local/etc/php/conf.d/opcache.ini
+    && docker-php-ext-install -j$(nproc) gd zip pdo pdo_mysql
 
 # Copy Composer
 COPY --from=composer:2.8.3 /usr/bin/composer /usr/bin/composer
 
-# Create non-root user
-RUN addgroup -g 1000 appgroup && adduser -D -u 1000 -G appgroup appuser
-
 WORKDIR /app
 
-# ============================================
-# Development Stage
-# ============================================
-FROM base AS development
-
-# Copy application code
-COPY --chown=appuser:appgroup . .
-
-# Setup storage
+# Create storage directories
 RUN mkdir -p storage/logs storage/framework/{sessions,views,cache} bootstrap/cache \
-    && chown -R appuser:appgroup storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
-
-USER appuser
+    && chmod -R 777 storage bootstrap/cache
 
 EXPOSE 9000
 CMD ["php-fpm"]
 
 # ============================================
-# Production Stage - Build assets here for deployment
+# Production Stage
 # ============================================
-FROM node:20-alpine AS node-builder
+FROM php:8.3-fpm-alpine AS production
+
+# Install dependencies
+RUN apk add --no-cache \
+    libzip-dev \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    mysql-client \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd zip pdo pdo_mysql opcache
+
+# Configure opcache for production
+RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.memory_consumption=256" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.validate_timestamps=0" >> /usr/local/etc/php/conf.d/opcache.ini
+
+# Copy Composer
+COPY --from=composer:2.8.3 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci --prefer-offline --no-audit
-
+# Copy application
 COPY . .
-RUN npm run build
 
-# ============================================
-# Production PHP Stage
-# ============================================
-FROM base AS production
+# Install dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Copy composer files first
-COPY --chown=appuser:appgroup composer.json composer.lock ./
-
-# Install production dependencies
-RUN composer install --no-dev --prefer-dist --no-scripts --no-autoloader --optimize-autoloader
-
-# Copy application code (exclude dev files)
-COPY --chown=appuser:appgroup app ./app
-COPY --chown=appuser:appgroup bootstrap ./bootstrap
-COPY --chown=appuser:appgroup config ./config
-COPY --chown=appuser:appgroup database ./database
-COPY --chown=appuser:appgroup public ./public
-COPY --chown=appuser:appgroup resources ./resources
-COPY --chown=appuser:appgroup routes ./routes
-COPY --chown=appuser:appgroup artisan ./
-
-# Copy built assets from node-builder
-COPY --from=node-builder --chown=appuser:appgroup /app/public/build ./public/build
-
-# Generate optimized autoload
-RUN composer dump-autoload --optimize --classmap-authoritative
-
-# Setup storage
+# Setup permissions
 RUN mkdir -p storage/logs storage/framework/{sessions,views,cache} bootstrap/cache \
-    && chown -R appuser:appgroup storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
-
-# Clean up
-RUN rm -rf tests *.md .git* .editorconfig .env.example
-
-USER appuser
+    && chmod -R 777 storage bootstrap/cache
 
 EXPOSE 9000
 CMD ["php-fpm"]
