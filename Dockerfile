@@ -9,6 +9,8 @@ COPY package*.json ./
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --prefer-offline --no-audit --omit=dev
 
+COPY . .
+
 # Build assets
 RUN npm run build
 
