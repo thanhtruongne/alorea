@@ -9,8 +9,7 @@ COPY package*.json ./
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --prefer-offline --no-audit --omit=dev
 
-# Copy only necessary files for build
-COPY vite.config.js postcss.config.js tailwind.config.js ./
+COPY vite.config.js ./
 COPY resources ./resources
 COPY public ./public
 
