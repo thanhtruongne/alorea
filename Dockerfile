@@ -7,7 +7,7 @@ COPY package*.json ./
 
 # Install dependencies with cache mount
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci --prefer-offline --no-audit --omit=dev
+    npm ci --prefer-offline --no-audit
 
 COPY . .
 
