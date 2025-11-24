@@ -45,21 +45,112 @@ DB_USERNAME           : Username database
 
 ### Bước 2: Tạo SSH Key cho GitHub Actions
 
-Trên server production, tạo SSH key mới:
+#### 2.1. Hiểu về SSH Key
+
+SSH Key gồm 2 phần:
+- **Private Key** (khóa bí mật): Giữ bí mật, dùng để xác thực từ GitHub Actions
+- **Public Key** (khóa công khai): Đặt trên server, cho phép kết nối từ private key
+
+#### 2.2. Tạo SSH Key trên server production
 
 ```bash
+# SSH vào server production
+ssh your_username@your_server_ip
+
+# Tạo SSH key pair mới
 ssh-keygen -t ed25519 -C "github-actions" -f ~/.ssh/github-actions
 ```
 
-Thêm public key vào authorized_keys:
+**Giải thích lệnh:**
+- `-t ed25519`: Dùng thuật toán mã hóa Ed25519 (bảo mật, hiện đại)
+- `-C "github-actions"`: Comment để nhận biết key này dùng cho gì
+- `-f ~/.ssh/github-actions`: Lưu key vào file `github-actions` trong thư mục `~/.ssh/`
+
+**Khi chạy lệnh, hệ thống sẽ hỏi:**
+```
+Enter passphrase (empty for no passphrase):
+```
+→ **Nhấn Enter** (để trống, không đặt mật khẩu) vì GitHub Actions không thể nhập passphrase tự động.
+
+**Kết quả:** 2 file được tạo:
+- `~/.ssh/github-actions` (private key - khóa bí mật)
+- `~/.ssh/github-actions.pub` (public key - khóa công khai)
+
+#### 2.3. Thêm public key vào authorized_keys
+
 ```bash
 cat ~/.ssh/github-actions.pub >> ~/.ssh/authorized_keys
 ```
 
-Copy private key và paste vào GitHub Secret `SSH_PRIVATE_KEY`:
+**Giải thích:**
+- `cat`: Đọc nội dung file
+- `>>`: Ghi thêm vào cuối file (không ghi đè)
+- `~/.ssh/authorized_keys`: File chứa danh sách các public key được phép SSH vào server
+
+**Lưu ý:** File này phải có đúng permissions:
+```bash
+chmod 600 ~/.ssh/authorized_keys
+chmod 700 ~/.ssh
+```
+
+#### 2.4. Copy private key để paste vào GitHub
+
 ```bash
 cat ~/.ssh/github-actions
 ```
+
+**Kết quả hiển thị giống như:**
+```
+-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+QyNTUxOQAAACDGKz...
+...nhiều dòng...
+-----END OPENSSH PRIVATE KEY-----
+```
+
+**Cách copy:**
+1. **Trên Linux/Mac:** Chọn toàn bộ text và copy (Ctrl+Shift+C)
+2. **Hoặc dùng lệnh:** 
+   ```bash
+   # Copy vào clipboard (nếu có xclip)
+   cat ~/.ssh/github-actions | xclip -selection clipboard
+   
+   # Hoặc hiển thị để copy thủ công
+   cat ~/.ssh/github-actions
+   ```
+
+#### 2.5. Thêm private key vào GitHub Secrets
+
+1. Vào repository GitHub
+2. **Settings** → **Secrets and variables** → **Actions**
+3. Click **New repository secret**
+4. Name: `SSH_PRIVATE_KEY`
+5. Value: Paste toàn bộ nội dung private key (bao gồm cả dòng BEGIN và END)
+6. Click **Add secret**
+
+**Lưu ý quan trọng:**
+- Copy **toàn bộ** nội dung, từ `-----BEGIN` đến `-----END`
+- Không thêm/bớt khoảng trắng, không sửa gì
+- Không chia sẻ private key với ai
+
+#### 2.6. Test SSH key (Optional)
+
+Từ máy tính khác, test kết nối bằng private key:
+```bash
+# Copy private key về máy local (chỉ để test)
+scp your_username@your_server_ip:~/.ssh/github-actions ~/test-key
+
+# Test SSH với key
+ssh -i ~/test-key your_username@your_server_ip
+
+# Xóa file test sau khi xong
+rm ~/test-key
+```
+
+**Lưu ý bảo mật:**
+- Sau khi copy private key vào GitHub Secrets, **không nên** giữ bản copy ở máy local
+- Private key trên server chỉ dùng để GitHub Actions có thể deploy
+- Nếu bị lộ private key, phải xóa public key khỏi `authorized_keys` và tạo key mới
 
 ### Bước 3: Chuẩn bị Server Production
 

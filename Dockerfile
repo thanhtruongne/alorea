@@ -1,4 +1,21 @@
 
+FROM node:20-alpine AS node-builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+COPY . .
+
+RUN npm run build
+
+# ============================================
+# Base Stage - Common Dependencies
+# ============================================
 FROM php:8.3-fpm-alpine AS base
 
 # Install system dependencies and PHP extensions
@@ -22,6 +39,9 @@ RUN addgroup -g 1000 appgroup && adduser -D -u 1000 -G appgroup appuser
 # Set working directory
 WORKDIR /app
 
+# ============================================
+# Development Stage
+# ============================================
 FROM base AS development
 
 # Copy composer files first for better caching
@@ -32,6 +52,9 @@ RUN composer install --prefer-dist --no-scripts --no-autoloader
 
 # Copy source code
 COPY --chown=appuser:appgroup . .
+
+# Copy built assets from node-builder
+COPY --from=node-builder --chown=appuser:appgroup /app/public/build ./public/build
 
 # Generate autoload files
 RUN composer dump-autoload --optimize
@@ -56,6 +79,9 @@ RUN composer install --no-dev --prefer-dist --no-scripts --no-autoloader --optim
 
 # Copy source code
 COPY --chown=appuser:appgroup . .
+
+# Copy built assets from node-builder (Vite build output)
+COPY --from=node-builder --chown=appuser:appgroup /app/public/build ./public/build
 
 # Generate optimized autoload files
 RUN composer dump-autoload --optimize --classmap-authoritative
