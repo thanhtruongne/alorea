@@ -11,13 +11,22 @@ services:
     restart: always
 
   app:
-    build: .
+    build:
+      context: .
+      target: ${BUILD_TARGET:-production}
+    image: ghcr.io/thanhtruongne/alorea:${IMAGE_TAG:-latest}
     container_name: alorea_app
     working_dir: /app
-    volumes:
-      - ./:/app
+    # Uncomment volumes for local development
+    # volumes:
+    #   - ./:/app
     expose:
       - "9000"
+    environment:
+      - DB_HOST=db
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
     depends_on:
       db:
         condition: service_healthy

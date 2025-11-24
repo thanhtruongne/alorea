@@ -1,0 +1,54 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# Documentation
+README.md
+CHANGELOG.md
+*.md
+
+# Development files
+.env.example
+docker-compose.yml
+docker-compose.*.yml
+Dockerfile.simple
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Testing
+tests
+.phpunit.result.cache
+coverage
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Laravel specific
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*
+
+# Keep gitkeep files
+!storage/logs/.gitkeep
+!storage/framework/cache/.gitkeep
+!storage/framework/sessions/.gitkeep
+!storage/framework/views/.gitkeep
+!bootstrap/cache/.gitkeep
