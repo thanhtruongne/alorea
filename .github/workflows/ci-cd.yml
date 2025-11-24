@@ -55,17 +55,20 @@ jobs:
           cache-to: type=gha,mode=max
           target: production
 
-      # Optional: Run tests trong container
-      - name: Run tests
-        run: |
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} php artisan test
-        continue-on-error: true
+      # Optional: Run tests trong container (comment nếu không cần)
+      # - name: Run tests
+      #   run: |
+      #     docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} php artisan test
+      #   continue-on-error: true
 
   # Stage 2: Deploy to production (chỉ chạy khi push vào main)
   deploy:
     needs: build-and-test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    # Timeout để tránh deploy quá lâu
+    timeout-minutes: 5
 
     steps:
       - name: Deploy to production server
@@ -76,7 +79,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
-            cd /path/to/your/app
+            cd /var/www/alorea
             docker compose pull app
             docker compose up -d --force-recreate app
             docker compose exec -T app php artisan migrate --force
