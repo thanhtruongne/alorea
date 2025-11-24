@@ -9,10 +9,6 @@ COPY package*.json ./
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --prefer-offline --no-audit --omit=dev
 
-COPY vite.config.js ./
-COPY resources ./resources
-COPY public ./public
-
 # Build assets
 RUN npm run build
 
