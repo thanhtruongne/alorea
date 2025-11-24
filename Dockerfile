@@ -1,19 +1,3 @@
-FROM node:20-alpine AS node-builder
-
-WORKDIR /app
-
-# Copy package files first for better caching
-COPY package*.json ./
-
-# Install dependencies with cache mount
-RUN --mount=type=cache,target=/root/.npm \
-    npm ci --prefer-offline --no-audit
-
-COPY . .
-
-# Build assets
-RUN npm run build
-
 # ============================================
 # Base Stage - Common Dependencies
 # ============================================
@@ -29,6 +13,8 @@ RUN apk add --no-cache \
     mysql-client \
     nginx \
     supervisor \
+    nodejs \
+    npm \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd exif zip pdo pdo_mysql mbstring opcache \
     && docker-php-ext-enable opcache
@@ -59,21 +45,8 @@ WORKDIR /app
 # ============================================
 FROM base AS development
 
-# Copy composer files first
-COPY --chown=appuser:appgroup composer.json composer.lock ./
-
-# Install dependencies with cache mount
-RUN --mount=type=cache,target=/tmp/cache \
-    composer install --prefer-dist --no-scripts --no-autoloader
-
 # Copy application code
 COPY --chown=appuser:appgroup . .
-
-# Copy built assets
-COPY --from=node-builder --chown=appuser:appgroup /app/public/build ./public/build
-
-# Generate autoload
-RUN composer dump-autoload --optimize
 
 # Setup storage
 RUN mkdir -p storage/logs storage/framework/{sessions,views,cache} bootstrap/cache \
@@ -86,16 +59,28 @@ EXPOSE 9000
 CMD ["php-fpm"]
 
 # ============================================
-# Production Stage
+# Production Stage - Build assets here for deployment
+# ============================================
+FROM node:20-alpine AS node-builder
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --prefer-offline --no-audit
+
+COPY . .
+RUN npm run build
+
+# ============================================
+# Production PHP Stage
 # ============================================
 FROM base AS production
 
 # Copy composer files first
 COPY --chown=appuser:appgroup composer.json composer.lock ./
 
-# Install production dependencies with cache mount
-RUN --mount=type=cache,target=/tmp/cache \
-    composer install --no-dev --prefer-dist --no-scripts --no-autoloader --optimize-autoloader
+# Install production dependencies
+RUN composer install --no-dev --prefer-dist --no-scripts --no-autoloader --optimize-autoloader
 
 # Copy application code (exclude dev files)
 COPY --chown=appuser:appgroup app ./app
@@ -107,18 +92,18 @@ COPY --chown=appuser:appgroup resources ./resources
 COPY --chown=appuser:appgroup routes ./routes
 COPY --chown=appuser:appgroup artisan ./
 
-# Copy built assets
+# Copy built assets from node-builder
 COPY --from=node-builder --chown=appuser:appgroup /app/public/build ./public/build
 
 # Generate optimized autoload
 RUN composer dump-autoload --optimize --classmap-authoritative
 
-# Setup storage with optimal permissions
+# Setup storage
 RUN mkdir -p storage/logs storage/framework/{sessions,views,cache} bootstrap/cache \
     && chown -R appuser:appgroup storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Remove unnecessary files
+# Clean up
 RUN rm -rf tests *.md .git* .editorconfig .env.example
 
 USER appuser
