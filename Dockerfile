@@ -17,7 +17,7 @@ RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/opcache.ini \
 # Copy Composer
 COPY --from=composer:2.8.3 /usr/bin/composer /usr/bin/composer
 
-WORKDIR /var/www
+WORKDIR /var/www/alorea
 
 # Create storage directories
 RUN mkdir -p storage/logs storage/framework/{sessions,views,cache} bootstrap/cache \
