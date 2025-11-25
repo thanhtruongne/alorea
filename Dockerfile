@@ -1,6 +1,6 @@
 FROM php:8.3-fpm-alpine
 
-# Install system dependencies and PHP extensions
+# System dependencies + PHP extensions
 RUN apk add --no-cache \
     libzip-dev \
     libpng-dev \
@@ -8,7 +8,7 @@ RUN apk add --no-cache \
     freetype-dev \
     mysql-client \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd zip pdo pdo_mysql opcache
+    && docker-php-ext-install -j$(nproc) gd zip pdo pdo_mysql exif opcache
 
 # Configure opcache
 RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/opcache.ini \
