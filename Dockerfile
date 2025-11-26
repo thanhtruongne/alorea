@@ -1,27 +1,37 @@
-FROM php:8.3-fpm-alpine
+FROM php:8.3.9-fpm-alpine3.20 AS base
+WORKDIR /app
 
-# System dependencies + PHP extensions
-RUN apk add --no-cache \
-    libzip-dev \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    mysql-client \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd zip pdo pdo_mysql exif opcache
-
-# Configure opcache
-RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/opcache.ini \
-    && echo "opcache.memory_consumption=128" >> /usr/local/etc/php/conf.d/opcache.ini
-
-# Copy Composer
+# Install Composer
 COPY --from=composer:2.8.3 /usr/bin/composer /usr/bin/composer
 
-WORKDIR /var/www/alorea
+# Add and Enable PHP-PDO Extenstions
+RUN docker-php-ext-install pdo pdo_mysql pcntl
+RUN docker-php-ext-enable pdo_mysql
 
-# Create storage directories
-RUN mkdir -p storage/logs storage/framework/{sessions,views,cache} bootstrap/cache \
+# Copy application files
+COPY . .
+
+# Install dependencies (with dev packages for local development)
+RUN composer install --optimize-autoloader
+
+# Create storage directories and fix permissions
+RUN mkdir -p storage/logs storage/framework/{sessions,views,cache} \
     && chmod -R 777 storage bootstrap/cache
 
-EXPOSE 9000
-CMD ["php-fpm"]
+FROM base AS reverb
+CMD ["php", "artisan", "reverb:start"]
+
+FROM base AS workers
+CMD ["php", "artisan", "queue:work"]
+
+FROM base AS nonroot
+RUN addgroup -g 1000 myusergroup
+RUN adduser -D -u 1000 myuser -G myusergroup
+RUN chown -R myuser:myusergroup .
+USER myuser
+
+FROM nonroot AS reverb-nonroot
+CMD ["php", "artisan", "reverb:start"]
+
+FROM nonroot AS workers-nonroot
+CMD ["php", "artisan", "queue:work"]
