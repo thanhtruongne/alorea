@@ -9,7 +9,6 @@ services:
       - ./nginx.app.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - app
-      - reverb
     restart: always
 
   app:
@@ -23,31 +22,6 @@ services:
         condition: service_healthy # Wait for the db service to be healthy (using the healthcheck defined below)
         restart: true # Restart the service if db stops
     restart: always
-
-  reverb:
-    build:
-      context: .
-      target: reverb
-    volumes:
-      - ./:/app
-    depends_on:
-      db:
-        condition: service_healthy # Wait for the db service to be healthy (using the healthcheck defined below)
-        restart: true # Restart the service if db stops
-    restart: always
-
-  workers:
-    build:
-      context: .
-      target: workers
-    volumes:
-      - ./:/app
-    depends_on:
-      reverb:
-        condition: service_started
-        restart: true # Restart the service if reverb stops
-    restart: always
-
   db:
     image: mysql:8
     environment:
