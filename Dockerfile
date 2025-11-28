@@ -25,6 +25,8 @@ RUN composer install --optimize-autoloader
 RUN mkdir -p storage/logs storage/framework/{sessions,views,cache} \
     && chmod -R 777 storage bootstrap/cache
 
+CMD ["php-fpm"]
+
 FROM base AS reverb
 CMD ["php", "artisan", "reverb:start"]
 
@@ -36,6 +38,7 @@ RUN addgroup -g 1000 myusergroup
 RUN adduser -D -u 1000 myuser -G myusergroup
 RUN chown -R myuser:myusergroup .
 USER myuser
+CMD ["php-fpm"]  # ⭐ Thêm luôn cho stage này
 
 FROM nonroot AS reverb-nonroot
 CMD ["php", "artisan", "reverb:start"]

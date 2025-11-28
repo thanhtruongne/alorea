@@ -46,6 +46,10 @@ storage/framework/sessions/*
 storage/framework/views/*
 bootstrap/cache/*
 
+# Docker data
+.docker
+docker
+
 # Keep gitkeep files
 !storage/logs/.gitkeep
 !storage/framework/cache/.gitkeep
