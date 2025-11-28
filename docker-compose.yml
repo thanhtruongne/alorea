@@ -84,12 +84,3 @@ services:
         condition: service_healthy
         restart: true
     restart: always
-
-  phpmyadmin:
-    image: phpmyadmin
-    restart: always
-    ports:
-      - 8001:80
-    environment:
-      - PMA_HOST=${DB_HOST} # from .env
-      - PMA_PORT=${DB_PORT} # from .env
