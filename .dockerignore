@@ -13,11 +13,13 @@ CHANGELOG.md
 *.md
 
 # Development files
-.env.example
+.env*
+vendor
 docker-compose.yml
 docker-compose.*.yml
 Dockerfile.simple
 
+app.conf
 # Node
 node_modules
 npm-debug.log
